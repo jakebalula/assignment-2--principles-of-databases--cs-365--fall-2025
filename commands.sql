@@ -12,22 +12,20 @@ SET @new_site_id = LAST_INSERT_ID();
 
 INSERT INTO credentials(user_id, site_id, email, username, encrypted_password)
 SELECT 1, @new_site_id, 'mysqluser@example.com', 'jakeMysql',
-       AES_ENCRYPT('MySQLpassword!', @key_str, s.@init_vector)
-FROM sites s where s.site_id = new_site_id;
+       AES_ENCRYPT('MySQLpassword!', @key_str, s.init_vector)
+FROM sites s where s.site_id = @new_site_id;
 
 --Get the password associated with the URL of one of your ten entries
 SELECT
-  s.site_name,
-  s.url,
-  c.username,
+  s.site_name, s.url, c.username,
   AES_DECRYPT(c.encrypted_password, @key_str, s.init_vector) AS decrypted_password
-FROM credenitals c
+FROM credentials c
 JOIN sites s ON c.site_id = s.site_id
 WHERE s.url = 'https://mail.google.com';
 
 -- Get all the password-related data, including the decrypted password, associated with URLs that have https in two of your ten entries.
 SELECT
-  s.site_name, s.url, c.email, c.username, c.created_as AS password_created_at,
+  s.site_name, s.url, c.email, c.username, c.created_at AS password_created_at,
   AES_DECRYPT(c.encrypted_password, @key_str, s.init_vector) AS decrypted_password
 FROM credentials c
 JOIN sites s ON c.site_id = s.site_id
@@ -57,4 +55,4 @@ DELETE FROM sites WHERE url = 'https://www.reddit.com';
 DELETE c
 FROM credentials c
 JOIN sites s ON c.site_id = s.site_id
-WHERE AES_DECRYPT(c.encrypted_password, @key_str. s.init_vector) = 'PasswordToPlaySomeGames';
+WHERE AES_DECRYPT(c.encrypted_password, @key_str, s.init_vector) = 'PasswordToPlaySomeGames';
